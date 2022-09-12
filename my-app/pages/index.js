@@ -4,7 +4,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useEffect, useState, useRef } from 'react';
-import Web3Modal, { filterProviderChecks } from "web3modal";
+import Web3Modal from "web3modal";
 import {
   CRYPTODEVS_DAO_CONTRACT_ADDRESS,
   CRYPTODEVS_NFT_CONTRACT_ADDRESS,
@@ -32,7 +32,7 @@ export default function Home() {
     }
   }
   const getProviderOrSigner = async(needSigner = false)=>{
-    const provider = web3ModalRef.current.connect();
+    const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider);
 
     const {chainId} = await web3Provider.getNetwork()
@@ -70,7 +70,7 @@ export default function Home() {
   };
   const getUserNFTBalance = async ()=>{
     try {
-      const provider = await getProviderOrSigner(true);
+      const signer = await getProviderOrSigner(true);
       const nftContract = getCryptodevsNFTContractInstance(signer);
       const balance = await nftContract.balanceOf(signer.getAddress());
       setNftBalance(parseInt(balance.toString()));
@@ -78,6 +78,21 @@ export default function Home() {
       console.error(err)
     }
   }
+
+  const createProposal = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const daoContract = getDaoContractInstance(signer);
+      const txn = await daoContract.createProposal(fakeTokenId);
+      setLoading(true);
+      await txn.wait();
+      await getNumProposalsInDAO();
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      window.alert(error.data.message);
+    }
+  };
 
   const renderCreateProposalTab = async ()=>{
     if (loading) {
@@ -142,8 +157,21 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    if (selectedTab === "View Proposals") {
+      fetchAllProposals();
+    }
+  }, [selectedTab]);
+
   // Calls the `voteOnProposal` function in the contract, using the passed
   // proposal ID and Vote
+  const getDaoContractInstance = (providerOrSigner) => {
+    return new Contract(
+      CRYPTODEVS_DAO_CONTRACT_ADDRESS,
+      CRYPTODEVS_DAO_ABI,
+      providerOrSigner
+    );
+  };
   const voteOnProposal = async (proposalId, _vote) => {
     try {
       const signer = await getProviderOrSigner(true);
@@ -248,7 +276,7 @@ export default function Home() {
   const getNumProposalsInDAO = async  ()=>{
     try {
       const provider= await getProviderOrSigner();
-      const daoContract = getDAOContractInstance(provider);
+      const daoContract = getDaoContractInstance(provider);
       //what is the difference betweem provider or signer 
       const numproposals = await daoContract.numProposals()
       setNumProposals(numproposals.toString())
