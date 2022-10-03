@@ -12,6 +12,7 @@ import {
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
+  let f=-1;
   // ETH Balance of the DAO contract
   const [treasuryBalance, setTreasuryBalance] = useState("0");
   // Number of proposals created in the DAO
@@ -82,14 +83,23 @@ export default function Home() {
     try {
       const signer = await getProviderOrSigner(true);
       const daoContract = getDaoContractInstance(signer);
+      f=0;
+      console.log(daoContract.debug)
+      //debug is undefined...
+      console.log("here)tgus")
       const txn = await daoContract.createProposal(fakeNftTokenId);
+      console.log("here)tgua;sdn;asdklms")
+      f=1;
+      console.log(f)
+      console.log("there")
       setLoading(true);
+      console.log("here")
       await txn.wait();
       await getNumProposalsInDAO();
       setLoading(false);
     } catch (error) {
-      console.error(error);
-      window.alert(error);
+      console.log(f);
+      window.alert("got stuck in createproposal");
     }
   };
 
@@ -173,7 +183,7 @@ export default function Home() {
     const web3Provider = new providers.Web3Provider(provider);
 
     const { chainId } = await web3Provider.getNetwork();
-    if (chainId !== 4) {
+    if (chainId !== 5) {
       window.alert("Please switch to the Rinkeby network!");
       throw new Error("Please switch to the Rinkeby network");
     }
@@ -378,7 +388,7 @@ export default function Home() {
       </div>
 
       <footer className={styles.footer}>
-        Made with &#10084; by Crypto Devs
+        Made by Nabeel Khan, after tons of debugging and errors
       </footer>
     </div>
   );

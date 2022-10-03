@@ -3,15 +3,25 @@ require("@nomicfoundation/hardhat-toolbox")
 require("dotenv").config({path:"./.env"})
 
 
-const ALCHEMY_API_KEY_URL = process.env.ALCHEMY_API_KEY_URL;
-const RINKEBY_PRIVATE_KEY =  process.env.RINKEBY_PRIVATE_KEY;
+const QUICKNODE_HTTP_URL = process.env.QUICKNODE_HTTP_URL;
+const PRIVATE_KEY =  process.env.PRIVATE_KEY;
 console.log(process.env)
 module.exports = {
-  solidity:"0.8.0",
+  solidity: {
+    version: "0.8.0",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks:{
-    rinkeby:{
-      url:ALCHEMY_API_KEY_URL,
-      accounts:[RINKEBY_PRIVATE_KEY]
+    goerli:{
+      url:QUICKNODE_HTTP_URL,
+      accounts:[PRIVATE_KEY],
+      gas: 2100000,
+      gasPrice: 8000000000
     }
   }
 }
